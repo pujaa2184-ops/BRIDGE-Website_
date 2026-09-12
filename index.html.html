@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRIDGE - Mobile Web App</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --primary: #0056b3;
+            --secondary: #00a8cc;
+            --accent: #ff9900;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+        }
+
+        body {
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: var(--white);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* APP HEADER */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 15px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .app-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .app-header p {
+            font-size: 0.72rem;
+            opacity: 0.9;
+        }
+
+        /* SCREEN CONTENT AREA */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--light);
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* BOTTOM NAVIGATION BAR */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--white);
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 0;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--gray);
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 33%;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* UI COMPONENTS */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-secondary { background: var(--secondary); color: var(--white); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-danger { background: #ef4444; color: var(--white); }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+
+        /* FEATURE 1: HELP UI */
+        .cc-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #e0f2fe;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .call-screen {
+            display: none;
+            text-align: center;
+            padding: 20px 10px;
+            background: var(--white);
+            border-radius: 12px;
+        }
+
+        .call-video-box {
+            width: 100%;
+            height: 180px;
+            background: #1e293b;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .user-mini-video {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 60px;
+            height: 80px;
+            background: #334155;
+            border-radius: 5px;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .transcript-preview {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.82rem;
+            margin-bottom: 15px;
+        }
+
+        .transcript-line { margin-bottom: 8px; }
+        .transcript-line strong { color: var(--primary); }
+
+        /* FEATURE 2: LEARN UI */
+        .video-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .video-item {
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        .video-thumbnail {
+            width: 110px;
+            height: 75px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail i {
+            font-size: 1.8rem;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .video-info {
+            flex: 1;
+            padding: 8px 10px 8px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .video-info h6 {
+            font-size: 0.82rem;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .video-info span {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        .expression-item {
+            background: #f8fafc;
+            border-left: 3px solid var(--secondary);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .expression-item .en {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+
+        .expression-item .id {
+            font-size: 0.78rem;
+            color: var(--gray);
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 10px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        .topic-category-card {
+            background: #f0f9ff;
+            border: 1px dashed var(--primary);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .topic-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .topic-chip {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .topic-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        /* FEATURE 3: PRACTICE (MINIMALIST & HUMAN AI MASCOT) */
+        #screen-practice {
+            padding: 0;
+            height: 100%;
+        }
+
+        .practice-start-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .practice-game-ui {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            flex-direction: column;
+            justify-content: space-between;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 5;
+        }
+
+        /* Minimalist Top Bar */
+        .game-top-bar {
+            background: var(--white);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 15px;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .badge-bridge {
+            background: #e0f2fe;
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Mascot Container (Minimalist Human Official Mascot) */
+        .mascot-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .mascot-card {
+            position: relative;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .mascot-avatar-frame {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,86,179,0.15);
+            background: #fff;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .mascot-avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mascot-nametag {
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: -12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Clean Speech Bubble */
+        .game-speech-bubble {
+            background: var(--white);
+            color: var(--dark);
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            max-width: 90%;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Minimalist Controls */
+        .game-bottom-controls {
+            background: var(--white);
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .mic-btn-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 86, 179, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .mic-btn-container:active {
+            transform: scale(0.92);
+            background: #ef4444;
+        }
+
+        .voice-feedback {
+            color: var(--gray);
+            font-size: 0.78rem;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- APP HEADER -->
+        <div class="app-header">
+            <h1>BRID<span>GE</span></h1>
+            <p>MSME English Communication Platform</p>
+        </div>
+
+        <!-- APP CONTENT AREA -->
+        <div class="app-content">
+            
+            <!-- SCREEN 1: HELP FEATURE -->
+            <div id="screen-help" class="screen active">
+                <div class="card">
+                    <h3 style="margin-bottom: 8px; color: var(--primary);"><i class="fas fa-hands-helping"></i> HELP Feature</h3>
+                    <p style="font-size: 0.82rem; color: var(--gray); margin-bottom: 15px;">
+                        Connect live with a <i>Communication Companion (CC)</i> to assist your conversation with foreign buyers in real-time.
+                    </p>
+
+                    <!-- Default View -->
+                    <div id="help-default">
+                        <div class="cc-status">
+                            <div class="avatar"><i class="fas fa-user-check"></i></div>
+                            <div>
+                                <strong style="font-size: 0.9rem;">12 Companions Online</strong>
+                                <p style="font-size: 0.75rem; color: var(--gray);">Ready for live assistance</p>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="startCall('voice')">
+                                <i class="fas fa-phone-alt"></i> Voice Call
+                            </button>
+                            <button class="btn btn-secondary" onclick="startCall('video')">
+                                <i class="fas fa-video"></i> Video Call
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ongoing Call View -->
+                    <div id="help-calling" class="call-screen">
+                        <div id="video-box-container" class="call-video-box" style="display: none;">
+                            <i class="fas fa-user-circle" style="font-size: 3.5rem;"></i>
+                            <span id="video-companion-name" style="margin-top: 5px;">Sarah (Companion)</span>
+                            <div class="user-mini-video">You</div>
+                        </div>
+                        
+                        <div id="voice-avatar-container">
+                            <div class="avatar" style="width:70px; height:70px; margin:0 auto 10px auto; font-size:2rem;">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                        </div>
+
+                        <h4 id="call-status-text">Connecting...</h4>
+                        <p style="font-size: 0.8rem; color: var(--gray);" id="call-timer">Searching available companion...</p>
+
+                        <button class="btn btn-danger" onclick="triggerEndCallModal()" style="margin-top: 20px;">
+                            <i class="fas fa-phone-slash"></i> End Call
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TRANSCRIPT PREVIEW CARD -->
+                <div class="card" id="transcript-card" style="display: none;">
+                    <h4 style="color: var(--primary); margin-bottom: 8px;"><i class="fas fa-file-alt"></i> Conversation Transcript</h4>
+                    <p style="font-size: 0.78rem; color: var(--gray); margin-bottom: 12px;">Transcribed from your recent HELP session with Sarah:</p>
+                    
+                    <div class="transcript-preview">
+                        <div class="transcript-line"><strong>Foreign Client:</strong> "Hi, I want to order 100 units of your handicraft. Can I get a discount?"</div>
+                        <div class="transcript-line"><strong>You (with CC Help):</strong> "Hello! Thank you. We can offer a 5% discount for bulk orders."</div>
+                        <div class="transcript-line"><strong>Foreign Client:</strong> "Sounds good! How about the shipping time to Australia?"</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="switchTab('learn')">
+                        <i class="fas fa-arrow-right"></i> Proceed to LEARN Feature
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODAL: ASK TO LEARN AFTER CALL -->
+            <div class="modal-overlay" id="learn-modal">
+                <div class="modal-card">
+                    <i class="fas fa-lightbulb" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 10px;"></i>
+                    <h4>Sensing a Learning Opportunity!</h4>
+                    <p style="font-size: 0.82rem; color: var(--gray); margin: 10px 0 20px 0;">
+                        Would you like to review the conversation transcript and learn English tailored to this interaction?
+                    </p>
+                    <button class="btn btn-primary" onclick="confirmLearn(true)">
+                        <i class="fas fa-check"></i> Yes, Show Transcript & Learn
+                    </button>
+                    <button class="btn btn-outline" onclick="confirmLearn(false)" style="margin-top: 8px;">
+                        No, Maybe Later
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: LEARN FEATURE -->
+            <div id="screen-learn" class="screen">
+                <div class="card">
+                    <h3 style="margin-bottom: 8px; color: var(--primary);"><i class="fas fa-graduation-cap"></i> LEARN Feature</h3>
+                    <p style="font-size: 0.82rem; color: var(--gray); margin-bottom: 15px;">
+                        Materials auto-tailored from your recent negotiation call.
+                    </p>
+
+                    <!-- SHORT LEARNING VIDEOS -->
+                    <h5 style="margin-bottom: 10px; color: var(--dark);">Short Learning Videos:</h5>
+                    <div class="video-grid">
+                        <div class="video-item" onclick="playVideoModal('Price Negotiation Masterclass')">
+                            <div class="video-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1556742049-0a67965304e6?auto=format&fit=crop&w=300&q=80');">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="video-info">
+                                <h6>Negotiation: Offering & Accepting Prices</h6>
+                                <span><i class="far fa-clock"></i> 3 mins • Business English</span>
+                            </div>
+                        </div>
+
+                        <div class="video-item" onclick="playVideoModal('Handling Bulk Order Requests')">
+                            <div class="video-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=300&q=80');">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="video-info">
+                                <h6>Handling Bulk Orders & Discounts</h6>
+                                <span><i class="far fa-clock"></i> 4 mins • MSME Essentials</span>
+                            </div>
+                        </div>
+
+                        <div class="video-item" onclick="playVideoModal('Polite Rejection Techniques')">
+                            <div class="video-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80');">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="video-info">
+                                <h6>How to Reject Low Offers Politely</h6>
+                                <span><i class="far fa-clock"></i> 2.5 mins • Communication</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USEFUL EXPRESSIONS WITH TRANSLATION -->
+                    <h5 style="margin-top: 15px; margin-bottom: 10px; color: var(--dark);">Useful Expressions (Ungkapan Penting):</h5>
+                    
+                    <div class="expression-item">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div class="en">"We can offer a 5% discount for bulk purchases."</div>
+                                <div class="id">"Kami dapat memberikan diskon 5% untuk pembelian jumlah banyak."</div>
+                            </div>
+                            <i class="fas fa-volume-up" style="color: var(--primary); cursor: pointer; margin-left: 10px;" onclick="playAudio('We can offer a five percent discount for bulk purchases')"></i>
+                        </div>
+                    </div>
+
+                    <div class="expression-item">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div class="en">"This is our best wholesale price."</div>
+                                <div class="id">"Ini adalah harga grosir terbaik kami."</div>
+                            </div>
+                            <i class="fas fa-volume-up" style="color: var(--primary); cursor: pointer; margin-left: 10px;" onclick="playAudio('This is our best wholesale price')"></i>
+                        </div>
+                    </div>
+
+                    <!-- TIPS WITH TRANSLATION -->
+                    <h5 style="margin-top: 15px; margin-bottom: 5px; color: var(--dark);">Communication Tips (Tips Komunikasi):</h5>
+                    <div class="tip-box">
+                        <strong><i class="fas fa-lightbulb"></i> Pro Tip (Etika Negosiasi):</strong>
+                        <p style="margin-top: 3px;">Always thank the client first before presenting counter-offers.</p>
+                        <p style="font-size: 0.75rem; color: #333; font-style: italic; margin-top: 2px;">
+                            (Selalu ucapkan terima kasih kepada pelanggan terlebih dahulu sebelum menyampaikan penawaran harga balasan.)
+                        </p>
+                    </div>
+
+                    <!-- EXPLORE OTHER TOPICS SECTION -->
+                    <div class="topic-category-card">
+                        <h6 style="color: var(--primary); font-size: 0.85rem;"><i class="fas fa-compass"></i> Want to learn other business situations?</h6>
+                        <p style="font-size: 0.73rem; color: var(--gray);">Pilih situasi bisnis lain untuk dipelajari secara mandiri:</p>
+                        
+                        <div class="topic-btn-grid">
+                            <div class="topic-chip" onclick="loadTopic('Describing Products')"><i class="fas fa-box-open"></i> Describing Products</div>
+                            <div class="topic-chip" onclick="loadTopic('Handling Complaints')"><i class="fas fa-exclamation-triangle"></i> Handling Complaints</div>
+                            <div class="topic-chip" onclick="loadTopic('Shipping & Logistics')"><i class="fas fa-truck"></i> Shipping & Logistics</div>
+                            <div class="topic-chip" onclick="loadTopic('Payment Terms')"><i class="fas fa-credit-card"></i> Payment Terms</div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button class="btn btn-primary" onclick="switchTab('practice')">
+                        <i class="fas fa-arrow-right"></i> Practice Skills in PRACTICE
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: PRACTICE FEATURE (HUMAN OFFICIAL MASCOT & CLEAN UI) -->
+            <div id="screen-practice" class="screen">
+                
+                <!-- 1. START PRACTICE VIEW -->
+                <div class="practice-start-container" id="practice-start-view">
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="mascot-avatar-frame" style="width: 100px; height: 100px; margin-bottom: 10px;">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Joko BRIDGE Mascot">
+                        </div>
+                        <h3 style="color: var(--primary);">AI Voice Practice</h3>
+                        <p style="font-size: 0.82rem; color: var(--gray); margin: 10px 0 20px 0;">
+                            Berlatih percakapan bahasa Inggris bisnis lisan langsung bersama <strong>Joko</strong> (AI Official Assistant BRIDGE).
+                        </p>
+                        <button class="btn btn-primary" onclick="startPracticeGame()">
+                            <i class="fas fa-phone-alt"></i> Start Call Practice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. MINIMALIST INTERACTIVE VOICE CALL SIMULATION -->
+                <div class="practice-game-ui" id="practice-game-view">
+                    
+                    <!-- TOP BAR -->
+                    <div class="game-top-bar">
+                        <div>
+                            <span class="badge-bridge">BRIDGE AI</span>
+                            <span style="margin-left: 5px; font-weight: 600;">Voice Session</span>
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.75rem;">
+                            <i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> Connected
+                        </div>
+                    </div>
+
+                    <!-- MASCOT & SPEECH BUBBLE AREA -->
+                    <div class="mascot-area">
+                        <!-- MASCOT AVATAR -->
+                        <div class="mascot-card">
+                            <div class="mascot-avatar-frame">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Joko Mascot">
+                            </div>
+                            <div class="mascot-nametag">Joko • BRIDGE AI</div>
+                        </div>
+                        
+                        <!-- SPEECH BUBBLE WITH PROPER GREETING -->
+                        <div class="game-speech-bubble" id="mascot-speech">
+                            "Hello! My name is Joko, your AI Assistant. Aku akan membantumu berlatih bahasa Inggris bisnis untuk UMKM secara menyenangkan. How can I help you today?"
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM CONTROLS -->
+                    <div class="game-bottom-controls">
+                        <p style="color: var(--gray); font-size: 0.78rem; margin-bottom: 10px;">Tekan & tahan mikrofon untuk berbicara:</p>
+                        
+                        <div class="mic-btn-container" id="mic-btn" onmousedown="startListening()" onmouseup="stopListening()" ontouchstart="startListening()" ontouchend="stopListening()">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+
+                        <div class="voice-feedback" id="voice-status">Tap & Hold to Speak</div>
+                        
+                        <button class="btn btn-outline" onclick="exitPracticeGame()" style="margin-top: 15px; padding: 8px; font-size: 0.78rem; border-color: #cbd5e1; color: var(--gray);">
+                            <i class="fas fa-phone-slash"></i> End Practice Call
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('help')" id="nav-help">
+                <i class="fas fa-headset"></i>
+                <span>HELP</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('learn')" id="nav-learn">
+                <i class="fas fa-book-open"></i>
+                <span>LEARN</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('practice')" id="nav-practice">
+                <i class="fas fa-comments"></i>
+                <span>PRACTICE</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // TAB SWITCHING
+        function switchTab(tabName) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+
+            document.getElementById('screen-' + tabName).classList.add('active');
+            document.getElementById('nav-' + tabName).classList.add('active');
+        }
+
+        // FEATURE 1: CALL LOGIC
+        let callInterval;
+
+        function startCall(type) {
+            document.getElementById('help-default').style.display = 'none';
+            document.getElementById('help-calling').style.display = 'block';
+            document.getElementById('transcript-card').style.display = 'none';
+
+            if(type === 'video') {
+                document.getElementById('video-box-container').style.display = 'flex';
+                document.getElementById('voice-avatar-container').style.display = 'none';
+            } else {
+                document.getElementById('video-box-container').style.display = 'none';
+                document.getElementById('voice-avatar-container').style.display = 'block';
+            }
+
+            let seconds = 0;
+            document.getElementById('call-status-text').innerText = "Connecting...";
+            
+            setTimeout(() => {
+                document.getElementById('call-status-text').innerText = "Connected with Sarah (CC)";
+                callInterval = setInterval(() => {
+                    seconds++;
+                    document.getElementById('call-timer').innerText = `Duration: 00:${seconds < 10 ? '0' : ''}${seconds}`;
+                }, 1000);
+            }, 1500);
+        }
+
+        function triggerEndCallModal() {
+            clearInterval(callInterval);
+            document.getElementById('help-calling').style.display = 'none';
+            document.getElementById('learn-modal').style.display = 'flex';
+        }
+
+        function confirmLearn(shouldLearn) {
+            document.getElementById('learn-modal').style.display = 'none';
+            document.getElementById('help-default').style.display = 'block';
+            
+            if (shouldLearn) {
+                document.getElementById('transcript-card').style.display = 'block';
+            }
+        }
+
+        // FEATURE 2: LEARN LOGIC
+        function playAudio(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Audio synthesis is not supported on this browser.");
+            }
+        }
+
+        function playVideoModal(title) {
+            alert("Playing Video Lesson: " + title);
+        }
+
+        function loadTopic(topicName) {
+            alert("Loading custom learning module for: " + topicName);
+        }
+
+        // FEATURE 3: PRACTICE LOGIC WITH JOKO AI
+        function startPracticeGame() {
+            document.getElementById('practice-start-view').style.display = 'none';
+            document.getElementById('practice-game-view').style.display = 'flex';
+            
+            // Initial AI Greeting Voice
+            playAudio("Hello! My name is Joko, your AI assistant. How can I help you today?");
+        }
+
+        function exitPracticeGame() {
+            document.getElementById('practice-game-view').style.display = 'none';
+            document.getElementById('practice-start-view').style.display = 'block';
+        }
+
+        function startListening() {
+            document.getElementById('voice-status').innerText = "Listening to your voice...";
+            document.getElementById('voice-status').style.color = "#0056b3";
+        }
+
+        function stopListening() {
+            document.getElementById('voice-status').innerText = "Joko is responding...";
+            document.getElementById('voice-status').style.color = "#00a8cc";
+
+            setTimeout(() => {
+                const responseText = "That's awesome! For bulk orders, offering a 5% discount is a great strategy. Would you like to practice offering delivery terms next?";
+                document.getElementById('mascot-speech').innerText = responseText;
+                playAudio(responseText);
+                document.getElementById('voice-status').innerText = "Evaluation: Great Pronunciation & Tone!";
+                document.getElementById('voice-status').style.color = "#16a34a";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
